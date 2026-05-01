@@ -3,7 +3,23 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { prompt } = req.body;
+  const { prompt, profileData } = req.body;
+
+  if (prompt === 'PROFILE_SAVE' && profileData) {
+    try {
+      const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL || '';
+      if (APPS_SCRIPT_URL) {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'PROFILE_ONLY', ...profileData })
+        });
+      }
+      return res.status(200).json({ status: 'saved' });
+    } catch (error) {
+      return res.status(200).json({ status: 'save_attempted' });
+    }
+  }
 
   if (!prompt) {
     return res.status(400).json({ error: 'No prompt provided' });
